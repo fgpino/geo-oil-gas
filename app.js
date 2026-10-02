@@ -23,7 +23,7 @@ function saveTransparency(){try{localStorage.setItem(transparencyKey,JSON.string
 function vectorStyle(f,c){const a=alpha('layers',c.id);const point=/Point$/.test(f.geometry?.type||'');return {color:featureColor(f,c),fillColor:featureColor(f,c),opacity:a,fillOpacity:(point?.8:c.id==='nqn-vm_distribucion_fluidos'?.4:.12)*a,weight:point?1:2}}
 function applyTransparency(c){const l=drawn.get(c.id);if(c.kind==='raster')l?.setOpacity?.(.6*alpha('layers',c.id));else l?.setStyle?.(f=>vectorStyle(f,c))}
 function transparencyControl(group,id,name,onChange){const label=document.createElement('label');label.className='transparency-control';const caption=document.createElement('span');const input=document.createElement('input');input.type='range';input.min='0';input.max='100';input.step='1';input.value=transparency[group][id]||0;input.setAttribute('aria-label','Transparencia de '+name);const update=()=>caption.textContent='Transparencia: '+input.value+' %';update();input.oninput=()=>{transparency[group][id]=Number(input.value);update();saveTransparency();onChange()};label.append(caption,input);return label}
-function renderBaseTransparency(){const id=$('base').value;$('base-transparency').replaceChildren(transparencyControl('bases',id,$('base').selectedOptions[0].textContent,()=>base.setOpacity(alpha('bases',id))))}
+function renderBaseTransparency(){const id=$('base').value;$('base-transparency').replaceChildren(transparencyControl('bases',id,$('base').selectedOptions[0].textContent,()=>setBaseOpacity(base,alpha('bases',id))))}
 function renderLegend(){
  $('legend').replaceChildren();if($('division').value!=='Exploración'&&!active.has('nqn-vm_distribucion_fluidos'))return;
  const heading=document.createElement('h2');heading.textContent='VM · Distribución de fluidos';$('legend').append(heading);
@@ -40,21 +40,45 @@ const map=L.map('map',{preferCanvas:true}).setView([-39,-65],4),canvas=L.canvas(
 let base, catalog=[], cache=new Map(),active=new Set(), drawn=new Map(),generation=0;
 const filterKeys=['recurso','estado','extraccion','formacion','subclasificacion','categoria_instalacion'];const labels={recurso:'Recurso',estado:'Estado',extraccion:'Tipo de extracción',formacion:'Formación',subclasificacion:'Subclasificación',categoria_instalacion:'Instalación'};
 for(const k of filterKeys){const l=document.createElement('label');l.textContent=labels[k];const s=document.createElement('select');s.id='f_'+k;s.innerHTML='<option value="">Todos</option>';s.onchange=redraw;l.append(s);$('filters').append(l)}
+function setBaseOpacity(layer,value){if(layer?.setOpacity)layer.setOpacity(value);else if(layer?.getContainer)layer.getContainer().style.opacity=value}
+function spanishToponym(layer){
+ if($('base-language').value!=='SPANISH')return;
+ const sdk=layer.getMaptilerSDKMap(),style=sdk.getStyle();
+ for(const item of style.layers||[]){
+  const text=item.layout?.['text-field'];if(item.type!=='symbol'||!text)continue;
+  if(Array.isArray(text)&&text[0]==='case'&&text[2]==='Islas Malvinas')continue;
+  const target=['any',['==',['get','iso_a2'],'FK'],['match',['coalesce',['get','name:en'],['get','name_en'],['get','name'],''],['Falkland Islands','Falkland Islands (Malvinas)','Falkland Islands (Islas Malvinas)','Islas Malvinas'],true,false]];
+  const fallback=typeof text==='string'?['concat',...text.split(/(\{[^}]+\})/).filter(Boolean).map(part=>/^\{[^}]+\}$/.test(part)?['coalesce',['get',part.slice(1,-1)],'']:part)]:text;
+  sdk.setLayoutProperty(item.id,'text-field',['case',target,'Islas Malvinas',fallback]);
+ }
+}
 function setBase(){
  if(base)map.removeLayer(base);
  const value=$('base').value;
- if(value==='osm'){
+ $('base-status').textContent='';$('base-language-control').hidden=value!=='maptiler-multilingual';
+ if(value==='maptiler-multilingual'){
+  try{
+   base=L.maptiler.maptilerLayer({apiKey:'Ip51Vh7Pso4vRtlYsOIu',style:L.maptiler.MapStyle.STREETS,language:L.maptiler.Language[$('base-language').value]}).addTo(map);
+   const layer=base,sdk=layer.getMaptilerSDKMap();let editing=false;
+   sdk.on('styledata',()=>{if(base!==layer||editing||!sdk.isStyleLoaded())return;editing=true;try{spanishToponym(layer)}finally{editing=false}});
+   layer.on('ready',()=>{if(base===layer)spanishToponym(layer)});
+   sdk.on('error',()=>{if(base===layer)$('base-status').textContent='No se pudo cargar parte del mapa multilingüe. Probá otra base.'});
+  }catch(e){
+   if(base)map.removeLayer(base);$('base').value='osm';setBase();$('base-status').textContent='Mapa multilingüe no disponible en este navegador. Se activó OpenStreetMap.';return;
+  }
+ }else if(value==='osm'){
   base=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
  }else if(value==='esri-imagery'){
   base=L.esri.basemapLayer('Imagery',{maxZoom:23}).addTo(map);
  }else{
   base=L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/'+value+'@EPSG%3A3857@png/{z}/{x}/{y}.png',{tms:true,maxZoom:18,attribution:'© Instituto Geográfico Nacional · Argenmap'}).addTo(map);
  }
- base.setOpacity(alpha('bases',value));renderBaseTransparency();
+ setBaseOpacity(base,alpha('bases',value));renderBaseTransparency();
  const currentBase=base,baseName=$('base').selectedOptions[0].textContent;
- $('base-status').textContent='';
  currentBase.on('tileerror',()=>{if(base!==currentBase)return;$('base-status').textContent='No se pudo cargar una tesela de '+baseName+'. Probá otro mapa base.'});
-}setBase();$('base').onchange=setBase;
+}
+$('base-language').onchange=()=>{if($('base').value==='maptiler-multilingual')setBase()};
+setBase();$('base').onchange=setBase;
 $('country').onclick=()=>map.setView([-39,-65],4);$('neuquen').onclick=()=>map.fitBounds([[-41.1,-71.9],[-36.1,-68]]);$('menu').onclick=()=>$('panel').classList.toggle('hidden');if(innerWidth<800)$('panel').classList.add('hidden');
 map.on('moveend',()=>{if(catalog.length)redraw()});
 function list(){const items=catalog.filter(c=>c.division===$('division').value&&(!$('source').value||c.source===$('source').value));$('layers').replaceChildren();for(const c of items){const row=document.createElement('div');row.className='layer';const check=document.createElement('input');check.type='checkbox';check.id='c_'+c.id;check.checked=active.has(c.id);check.disabled=!c.file;check.onchange=async()=>{check.checked?active.add(c.id):active.delete(c.id);await redraw()};const label=document.createElement('label');label.htmlFor=check.id;label.innerHTML=`<span class="dot" style="background:${esc(layerColor(c))}"></span>${esc(c.name)}<small>${esc(c.source)} · ${c.file?Number(c.count).toLocaleString('es-AR')+' elementos':esc(c.status||'Pendiente')}</small>`;if(!c.file&&c.error){const reason=document.createElement('small');reason.className='layer-reason';reason.textContent=c.error;label.append(reason)}row.append(check,label);

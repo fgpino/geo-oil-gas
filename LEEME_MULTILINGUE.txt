@@ -1,0 +1,5 @@
+MAPA MULTILINGUE - geo-oil-gas
+Extraer en D:\Desarrollos\Geo_capas_geograficas\geo-oil-gas, reemplazando archivos y conservando la carpeta vendor. Ejecutar 05_ACTUALIZAR_GITHUB.bat. Abrir https://fgpino.github.io/geo-oil-gas/ con Ctrl+F5.
+Mapa inicial MapTiler en español; selector español, inglés, portugués y francés. En español el estilo fija Islas Malvinas; este ajuste de nombre no modifica límites. Se mantienen otras bases, colores y transparencia.
+La clave pública está restringida a fgpino.github.io y utiliza la cuota de tu plan MapTiler. Para pruebas locales hay que permitir localhost en su configuración. No requiere renovar capas.
+Verificado: clave HTTP 200, cambio de idiomas, rótulo y transparencia por pruebas de código. Comprobación visual pendiente en sitio publicado.
