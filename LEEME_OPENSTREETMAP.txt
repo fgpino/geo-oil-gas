@@ -1,0 +1,10 @@
+ACTUALIZACION OPENSTREETMAP - geo-oil-gas
+
+1. Extraer app.js e index.html en D:\Desarrollos\Geo_capas_geograficas\geo-oil-gas, reemplazando los existentes.
+2. Ejecutar 03_VER_LOCAL.bat para revisar.
+3. Ejecutar 05_ACTUALIZAR_GITHUB.bat desde esa misma carpeta para publicar.
+4. Abrir https://fgpino.github.io/geo-oil-gas/ y recargar con Ctrl+F5.
+
+Orden: OpenStreetMap (inicial), World Imagery de Esri y las cinco variantes de Argenmap.
+Los controles de transparencia y las preferencias de colores siguen disponibles.
+No hace falta actualizar ni descargar nuevamente los datos geográficos.
