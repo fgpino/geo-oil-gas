@@ -1,0 +1,13 @@
+{
+  "registros_geograficos_318": 2543,
+  "geometrias_validas_318": 2540,
+  "instalaciones_padron_554": 2524,
+  "instalaciones_554_cartografiadas": 2369,
+  "instalaciones_554_sin_ubicacion": 155,
+  "medidores_padron_554": 3222,
+  "medidores_vinculados": 2961,
+  "medidores_sin_vinculo_validado": 261,
+  "instalaciones_con_medidores": 1809,
+  "ids_geograficos_repetidos": 0,
+  "downloaded": "2026-10-02T14:02:31.031682+00:00"
+}

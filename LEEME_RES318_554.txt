@@ -1,0 +1,1 @@
+Extraer dentro de la carpeta actual del visor y reemplazar los archivos. Recargar con Ctrl+F5. Las dos capas 554 ahora están disponibles en Instalaciones. Los medidores se agrupan por instalación; la posición de la instalación es una referencia territorial. Para publicar: ejecutar 04_PUBLICAR_GITHUB.bat. Para actualizar: 02_ACTUALIZAR.bat incorpora la vinculación nueva.
