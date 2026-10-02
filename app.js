@@ -51,7 +51,9 @@ function setBase(){
   base=L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/'+value+'@EPSG%3A3857@png/{z}/{x}/{y}.png',{tms:true,maxZoom:18,attribution:'© Instituto Geográfico Nacional · Argenmap'}).addTo(map);
  }
  base.setOpacity(alpha('bases',value));renderBaseTransparency();
- base.on('tileerror',()=>{$('status').textContent=$('base').selectedOptions[0].textContent+' no responde. Las capas locales siguen disponibles.'});
+ const currentBase=base,baseName=$('base').selectedOptions[0].textContent;
+ $('base-status').textContent='';
+ currentBase.on('tileerror',()=>{if(base!==currentBase)return;$('base-status').textContent='No se pudo cargar una tesela de '+baseName+'. Probá otro mapa base.'});
 }setBase();$('base').onchange=setBase;
 $('country').onclick=()=>map.setView([-39,-65],4);$('neuquen').onclick=()=>map.fitBounds([[-41.1,-71.9],[-36.1,-68]]);$('menu').onclick=()=>$('panel').classList.toggle('hidden');if(innerWidth<800)$('panel').classList.add('hidden');
 map.on('moveend',()=>{if(catalog.length)redraw()});

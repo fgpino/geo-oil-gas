@@ -1,0 +1,1 @@
+Extraer sobre la carpeta geo-oil-gas y reemplazar app.js e index.html. Ejecutar 05_ACTUALIZAR_GITHUB.bat. Abrir el sitio con Ctrl+F5. Los avisos del mapa base ahora están junto al selector, identifican el proveedor que falló e ignoran eventos de bases retiradas. El JavaScript tiene URL con versión para renovar la caché.
